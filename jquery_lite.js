@@ -1,21 +1,21 @@
 (function () {
-
+  function DOMNodeCollection(elArray) {
+    this.els = elArray;
+  }
+  
   var $l = window.$l = function (selector) {
+    var selection;
     if (selector instanceof HTMLElement) {
-      var selection = [selector];
+      selection = [selector];
     } else {
-      var selection = [].slice.call(document.querySelectorAll(selector));
+      selection = [].slice.call(document.querySelectorAll(selector));
     }
     return new DOMNodeCollection(selection);
   };
 
-  function DOMNodeCollection(elArray) {
-    this.els = elArray;
-  }
-
   DOMNodeCollection.prototype = {
     html: function (string) {
-      if (string === undefined) {
+      if (typeof string === 'undefined') {
         return this.els[0].innerHTML;
       } else {
         this.els.forEach(function (el) {
@@ -50,19 +50,78 @@
     },
 
     attr: function(name, attribute) {
-      this.els.forEach( function(el) {
-        el.setAttribute(name, attribute);
-      });
+      if (typeof attribute === 'undefined'){
+        var result;
+        this.els.forEach( function(el) {
+          if (typeof el.getAttribute(name) === 'string' ) {
+            result = el.getAttribute(name);
+            return;
+          }
+        });
+        return result;
+      } else {
+        this.els.forEach( function(el) {
+          el.setAttribute(name, attribute);
+        });
+        return this;
+      }
     },
 
     addClass: function (name) {
       this.els.forEach(function (el) {
         el.className += " " + name;
-        if (el.className[0] === " ") {
-          el.className = el.className.substring(1);
-        }
+        el.className = el.className.trim();
       });
+      return this;
+    },
+
+    removeClass: function (name) {
+      if (typeof name === "undefined") {
+        this.els.forEach(function (el) {
+          el.className = ""; // leaves <el class></el>
+        });
+      } else if (name === ".") {
+        return console.log("INVALID REMOVECLASS INPUT")
+      } else {
+        var re = "(^|\\s)" + name + "($|\\s)";
+        re = new RegExp(re, "g");
+        this.els.forEach(function (el) {
+          el.className = el.className.replace(re, " ");
+          el.className = el.className.trim();
+        });
+      }
+      return this;
+    },
+
+    children: function() {
+      var answer = [];
+      this.els.forEach( function(el) {
+        answer.push(el.children);
+      });
+      return new DOMNodeCollection(answer);
+    },
+
+    parent: function(){
+      var answer = []
+      this.els.forEach( function(el) {
+        answer.push(el.parentElement);
+      });
+      return new DOMNodeCollection(answer);
+    },
+
+    find: function(selector) {
+      var answer = [];
+      this.els.forEach( function(el) {
+        answer.push(el.querySelectorAll(selector));
+      });
+      return new DOMNodeCollection(answer);
+    },
+
+    remove: function () {
+      this.els.forEach(function (el) {
+        el.parentNode.removeChild(el);
+      })
+      return this;
     }
   }
-
 })();
