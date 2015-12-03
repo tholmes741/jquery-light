@@ -53,9 +53,16 @@
       this.els.forEach( function(el) {
         el.setAttribute(name, attribute);
       });
+    },
+
+    addClass: function (name) {
+      this.els.forEach(function (el) {
+        el.className += " " + name;
+        if (el.className[0] === " ") {
+          el.className = el.className.substring(1);
+        }
+      });
     }
-
-
   }
 
 })();
