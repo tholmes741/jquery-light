@@ -18,5 +18,17 @@
       this is a div.
     </div>
 
+    <a href="#">a link</a>
+
+    <script>
+      var li = $l("li");
+      var a = li.find('a');
+      function fun (e) {
+        alert('hey')
+      }
+
+      a.on("click", fun);
+    </script>
+
   </body>
 </html>

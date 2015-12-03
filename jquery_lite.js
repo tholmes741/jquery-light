@@ -2,7 +2,7 @@
   function DOMNodeCollection(elArray) {
     this.els = elArray;
   }
-  
+
   var $l = window.$l = function (selector) {
     var selection;
     if (selector instanceof HTMLElement) {
@@ -112,7 +112,8 @@
     find: function(selector) {
       var answer = [];
       this.els.forEach( function(el) {
-        answer.push(el.querySelectorAll(selector));
+        var results = [].slice.call(el.querySelectorAll(selector));
+        answer = answer.concat(results)
       });
       return new DOMNodeCollection(answer);
     },
@@ -122,6 +123,18 @@
         el.parentNode.removeChild(el);
       })
       return this;
+    },
+
+    on: function (type, callback) {
+      this.els.forEach(function (el) {
+        el.addEventListener(type, callback);
+      });
+    },
+
+    off: function (type, callback) {
+      this.els.forEach(function (el) {
+        el.removeEventListener(type, callback);
+      });
     }
   }
 })();
