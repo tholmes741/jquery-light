@@ -2,15 +2,32 @@
   function DOMNodeCollection(elArray) {
     this.els = elArray;
   }
+  var queue = [];
+  var fired = false;
 
-  var $l = window.$l = function (selector) {
-    var selection;
-    if (selector instanceof HTMLElement) {
-      selection = [selector];
+  document.addEventListener("DOMContentLoaded", function(e) {
+    fired = true;
+    queue.forEach(function (callback) {
+      callback();
+    });
+  });
+
+  var $l = window.$l = function (param) {
+    var arr;
+
+    if (typeof param === "function") {
+      if(!fired) {
+        queue.push(param);
+      } else {
+        param();
+      }
+      return;
+    } else if (param instanceof HTMLElement) {
+      arr = [param];
     } else {
-      selection = [].slice.call(document.querySelectorAll(selector));
+      arr = [].slice.call(document.querySelectorAll(param));
     }
-    return new DOMNodeCollection(selection);
+    return new DOMNodeCollection(arr);
   };
 
   DOMNodeCollection.prototype = {
@@ -51,14 +68,11 @@
 
     attr: function(name, attribute) {
       if (typeof attribute === 'undefined'){
-        var result;
-        this.els.forEach( function(el) {
-          if (typeof el.getAttribute(name) === 'string' ) {
-            result = el.getAttribute(name);
-            return;
+        for (var i = 0; i < this.els.length; ++i) {
+          if (typeof this.els[i].getAttribute(name) === 'string' ) {
+            return this.els[i].getAttribute(name);
           }
-        });
-        return result;
+        }
       } else {
         this.els.forEach( function(el) {
           el.setAttribute(name, attribute);
