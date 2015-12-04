@@ -12,7 +12,7 @@
     });
   });
 
-  var $l = window.$l = function (param) {
+  window.$l = function (param) {
     var arr;
 
     if (typeof param === "function") {
@@ -28,6 +28,43 @@
       arr = [].slice.call(document.querySelectorAll(param));
     }
     return new DOMNodeCollection(arr);
+  };
+
+  window.$l.extend = function() {
+    var args = [].slice.call(arguments, 1);
+    var target = arguments[0];
+    args.forEach( function(arg) {
+      for (var attrname in arg) {
+        target[attrname] = arg[attrname];
+      }
+    });
+    return target;
+  };
+
+  window.$l.ajax = function (options) {
+    var defaults = {
+      success: function () {},
+      error: function () {},
+      url: document.URL,
+      method: 'GET',
+      data: {},
+      contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+    };
+    window.$l.extend(defaults, options);
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function(e) {
+      if (xmlhttp.readyState === XMLHttpRequest.DONE ) {
+        var content = JSON.parse(e.currentTarget.response)
+        if(xmlhttp.status === 200){
+          defaults.success(content);
+        } else {
+          defaults.error(content);
+        }
+      }
+    };
+    xmlhttp.open(defaults.method, defaults.url, true);
+    xmlhttp.send(defaults.data);
   };
 
   DOMNodeCollection.prototype = {
